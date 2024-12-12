@@ -2,6 +2,7 @@ class JourneysController < ApplicationController
   def index
     @journey = Journey.new
     @upcoming_journeys = Journey.by(current_user).upcoming
+    @current_journeys = Journey.by(current_user).current
     @previous_journeys = Journey.by(current_user).previous
     @accepted_invitations = Invite.by(current_user).positive
     @pending_invitations = Invite.where("guest_id = ? AND response IS ?", current_user.id, nil).order("created_at DESC")
@@ -23,11 +24,13 @@ class JourneysController < ApplicationController
   def search
     search = params[:search]
     radius =  params[:rangeInput]
-    # @users = []
-    @users = twitter_search(current_user.twitter, search, radius)
-    # 50.times  do
-    #   @users << create_random_tweet
-    # end
+    @current_location = request.location
+    lat =  params[:lat] || @current_location.latitude
+    long = params[:long] || @current_location.longitude
+    p "Searching in location: #{lat}, #{long}" # <-- For debugging
+
+    @users = []
+    @users = twitter_search(current_user.twitter, search, lat, long, radius)
     if request.xhr?
       render :json => @users
     else
@@ -43,18 +46,19 @@ class JourneysController < ApplicationController
       friends.each do |friend|
         uid = current_user.twitter.user("#{friend}").id
         @guest = User.find_or_initialize_by(uid: uid)
-        @guest.provider = "twitter"
-        @guest.name = "guest"
-        @guest.nickname = 'guest'
+        @guest.provider ||= "twitter"
+        @guest.name ||= "guest"
+        @guest.nickname ||= 'guest'
         @guest.save
         @invite = Invite.create(journey_id: @journey.id, guest_id: @guest.id)
 
         # Method for sending notification message via twitter:
         @guest_handle = current_user.twitter.user(@guest.uid.to_i)
-        current_user.twitter.update("@#{@guest_handle.screen_name}: @#{@invite.journey.user.nickname} has invited you for a journey! Check it out at via @goatogether ! #goatogether")
+        current_user.twitter.update("@#{@guest_handle.screen_name}: @#{@invite.journey.user.nickname} has invited you for a journey! Check it out at https://goatogether.herokuapp.com ! #goatogether")
       end
       if request.xhr? # use responders instead of xhr? method
         @upcoming_journeys = Journey.by(current_user).upcoming
+        @current_journeys = Journey.by(current_user).current
         @previous_journeys = Journey.by(current_user).previous
         @accepted_invitations = Invite.by(current_user).positive
         @pending_invitations = Invite.where("guest_id = ? AND response IS ?", current_user.id, nil).order("created_at DESC")
@@ -72,7 +76,7 @@ class JourneysController < ApplicationController
     @pending_invitations = Invite.where("guest_id = ? AND response IS ?", current_user.id, nil).order("created_at DESC")
     @result = current_user.twitter.search("from:#{@journey.user.nickname} #{@journey.hashtag}").to_a
 
-    if @journey.invites.first.guest
+    if @journey.invites.first
       @user = current_user.twitter.user(@journey.invites.first.guest.uid.to_i).screen_name
       @guest_result = current_user.twitter.search("from:#{@user} #{@journey.hashtag}").to_a
       # binding.pry
@@ -159,19 +163,20 @@ private
   end
 
 
-  def twitter_search(twitter_client, search_term, radius, max_id=nil, results=[], pins=2)
+  def twitter_search(twitter_client, search_term, lat, long, radius, max_id=nil, results=[], pins=25)
     search_term = search_term.to_s
+
     if results.length >= pins
       results.slice!(pins..-1)
       return results
     else
       puts "#{radius.to_i}"
-      results2 =  current_user.twitter.search(search_term, geocode:"32,-117,#{radius}mi", max_id: max_id).take(5).to_a
+      results2 =  current_user.twitter.search(search_term, geocode:"#{lat},#{long},#{radius}mi", max_id: max_id).take(15).to_a
       results = results.concat(results2)
       max_id = results.last.id
 
       results.select!{|tweet| tweet.geo? }
-      twitter_search(twitter_client,search_term, radius, max_id, results)
+      twitter_search(twitter_client,search_term, lat, long, radius, max_id, results)
     end
   end
 

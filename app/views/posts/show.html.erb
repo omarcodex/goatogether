@@ -5,22 +5,24 @@
     frameborder="0" style="border:0"
     src="https://www.google.com/maps/embed/v1/streetview?key=<%=ENV['GOOGLE_API_KEY']%>&location=33.00584797,-117.00582499">
   </iframe>
-  <div class='tweet-details'>
-    <div class='tweet-user'>
-      <div class="tweet-user-left">
-        <div id="twitter-avatar"></div>
-        <div class="tweet-name-username">
-          <div id="twitter-name"></div>
-          <div id="twitter-username"></div>
-        </div>
-      </div>
-      <div class="tweet-user-right">
-        <span id="twitter-icon"></span>
+
+<div class="tweet-details">
+  <div class='tweet-user'>
+    <div class="tweet-user-left">
+      <div class="twitter-avatar"><img src=` + element.user.profile_image_url + `/></div>
+      <div class="tweet-name-username">
+        <div class="twitter-name"></div>
+        <div class="twitter-username"></div>
       </div>
     </div>
-    <div class='tweet-content'>
-      <div id="twitter-text"></div>
-      <div id="twitter-date"></div>
+    <div class="tweet-user-right">
+      <span class="twitter-icon"></span>
     </div>
+  </div>
+  <div class='tweet-content'>
+    <div class='tweet-picture'></div>
+    <div class="twitter-text"></div>
+    <div class="twitter-date"></div>
+  </div>
   </div>
 </div>

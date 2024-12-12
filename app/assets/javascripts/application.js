@@ -113,6 +113,7 @@ function initialize() {
     marker = new google.maps.Marker({
       position: new google.maps.LatLng(locations[i][1], locations[i][2]),
       icon: '/assets/goat-pin.png',
+      zIndex: google.maps.Marker.MAX_ZINDEX + 1,
       map: map
     });
 
@@ -137,9 +138,8 @@ function initialize() {
 })
 }
 function updateTextInput(val) {
-          document.getElementById('textInput').value=val;
+          document.getElementById('textInput').value=val + ' miles';
         }
-
 
 $(document).ready(function(){
 
@@ -158,42 +158,21 @@ $(document).ready(function(){
     $(".loader").show();
     var tweetResponse = response;
 
-    // function addMarker(lat, long) {
-    //   marker = new google.maps.Marker({
-    //     position: new google.maps.LatLng(lat, long),
-    //     icon: 'http://maps.google.com/mapfiles/ms/micons/red-dot.png',
-    //     map: map
-    //   });
-    //   locations.push(['Test', lat, long, 4])
-    //   return marker
-    // }
-
     $(".menu-btn").click(function(event){
       event.preventDefault();
       $(".nav1").toggleClass("menushow");
     });
 
-    icons = {
-      twitter: "https://s24.postimg.org/7ortwr045/pin.png",
-      red: 'http://maps.google.com/mapfiles/ms/micons/red-dot.png',
-      blue: 'http://maps.google.com/mapfiles/ms/micons/blue-dot.png',
-      green: 'http://maps.google.com/mapfiles/ms/micons/green-dot.png',
-      pink: 'http://maps.google.com/mapfiles/ms/micons/pink-dot.png',
-      yellow: 'http://maps.google.com/mapfiles/ms/micons/yellow-dot.png',
-      turqoise: 'http://maps.google.com/mapfiles/ms/micons/ltblue-dot.png',
-      orange: 'http://maps.google.com/mapfiles/ms/micons/orange-dot.png'
-    }
-
-      function addMarker(lat, long) {
-          var marker = new google.maps.Marker({
-            position: new google.maps.LatLng(lat, long),
-            icon: icons.twitter,
-            animation: google.maps.Animation.DROP,
-            map: map
-          });
-          markers.push(marker)
-          return marker
-        }
+    function addMarker(lat, long) {
+        var marker = new google.maps.Marker({
+          position: new google.maps.LatLng(lat, long),
+          icon: "https://s24.postimg.org/7ortwr045/pin.png",
+          animation: google.maps.Animation.DROP,
+          map: map
+        });
+        markers.push(marker)
+        return marker
+      }
 
     // Marker is clicked, slide out slidey
     function createLocationPage(newLat, newLong, element1){
@@ -203,18 +182,22 @@ $(document).ready(function(){
             method: "GET"
           })
           .done(function(response){
+            console.log(element1)
             $(".nav2").addClass("menushow2");
             $('#slideout').html(response)
             newGoogleMapsDestinationTemplate = "https://www.google.com/maps/embed/v1/streetview?key=AIzaSyCOSRt1QlomEZuebiEqX7u1XEMJdfGdRNQ&location="+newLat+","+newLong;
 
             $("iframe").attr('src', newGoogleMapsDestinationTemplate);
             // // Adding screen_name, text, lat, long to sidebar. Choose either plaintext or HTML (see below):
-            $('#twitter-avatar').html("<img src=" + element1.user.profile_image_url + "/>");
-            $('#twitter-name').text(element1.user.name);
-            $('#twitter-username').text("@" + element1.user.screen_name);
-            $('#twitter-text').text(element1.text);
-            $('#twitter-date').text(element1.created_at);
-            $('#twitter-icon').html('<a href="https://twitter.com/' + element1.user.screen_name + '"><i class="fa fa-twitter" aria-hidden="true"></i></a>')
+            $('.twitter-avatar').html("<img src=" + element1.user.profile_image_url + "/>");
+            $('.twitter-name').text(element1.user.name);
+            $('.twitter-username').text("@" + element1.user.screen_name);
+            $('.twitter-text').text(element1.text);
+            $('.twitter-date').text(element1.created_at);
+            if(element1.entities.media){
+             $('.tweet-picture').html('<img src="'+element1.entities.media[0].media_url+'"></img>');
+            }
+            $('.twitter-icon').html('<a href="https://twitter.com/' + element1.user.screen_name + '"><i class="fa fa-twitter" aria-hidden="true"></i></a>')
           });
       });
     }
@@ -240,13 +223,12 @@ $(document).ready(function(){
         });
   })
 
-
-
    $('.search-form').on('submit', function(event){
     markers.forEach(function(marker){ marker.setMap(null) });
     event.preventDefault();
     $('.loader').show()
-    var data = $('.search-form').serialize();
+    var data = $('.search-form').serialize() + '&lat=' + currentLocation[1] + '&long=' + currentLocation[2];
+    console.log(data);
     $.get('/journeys/search', data)
       .done(function(response){
         response.forEach(function(element, elementIndex1) {
@@ -275,12 +257,41 @@ $(document).ready(function(){
       $(".nav1").removeClass("menushow");
       $(".nav2").addClass("menushow2");
       $('#slideout').html(response);
-      $(".journey-show-name").append("<ul class='journey-tweet-list'></ul>");
       var results = JSON.parse($('.results-data').html())
-      // console.log(results.typeOf())
-      // window.results = results
-      results.forEach(function(element){
-        $(".journey-tweet-list").append("<li>"+element.text+"</li>");
+      results.forEach(function(element, elementIndex){
+        function imageMaker(element){
+          if(element.entities.media){
+          return "<img src='" + element.entities.media[0].media_url + "'></img>"
+          } else { return ""}
+        };
+        $('.all-tweets').append(
+          "<div class='tweet-details'>"+
+            "<div class='tweet-user'>"+
+              "<div class='tweet-user-left'>"+
+                "<div class='twitter-avatar'><img src=" + element.user.profile_image_url + "/></div>"+
+                "<div class='tweet-name-username'>"+
+                  "<div class='twitter-name'>"+ element.user.name +"</div>"+
+                  "<div class='twitter-username'>@" + element.user.screen_name +"</div>"+
+                "</div>"+
+              "</div>"+
+              "<div class='tweet-user-right'>"+
+                "<span class='twitter-icon'>"+
+                  "<a href='https://twitter.com/'" + element.user.screen_name +
+                  "><i class='fa fa-twitter' aria-hidden='true'></i></a></span>"+
+              "</div>"+
+            "</div>"+
+            "<div class='tweet-content'>"+
+              "<div class='tweet-picture'>" + imageMaker(element) +
+              "</div>"+
+              "<div class='twitter-text'>"+ element.text + "</div>"+
+              "<div class='twitter-date'>"+ element.created_at +"</div>"+
+            "</div>"+
+            "</div>"+
+          "</div>"
+          );
+        // if(element.entities.media){
+        //  $('.tweet-picture').append('<img src="'+element.entities.media[0].media_url+'"></img>');
+        // }
         if(element.coordinates){
           var latitude = element.coordinates.coordinates[1];
           var longitude = element.coordinates.coordinates[0];
@@ -307,7 +318,7 @@ $(document).ready(function(){
     $(".nav2").removeClass("menushow2");
   });
 
-
+// First nav item is selected
   $(".menu-nav li").first().css('background-color', '#5f846c');
   $(".menu-nav li").click(function(event){
     $(this).siblings().css('background-color', '#719E81');
@@ -318,9 +329,14 @@ $(document).ready(function(){
 // Begin pop up modal
   $("a[href='/journeys/new']").on('click', function(e){
     e.preventDefault();
+    $(".nav2").removeClass("menushow2");
     $('div#overlay').show();
     $('.close').on('click', function(){
       $('div#overlay').hide();
+      $('#new_journey')[0].reset();
+    })
+    $('form#new_journey').on('submit', function(){
+      $('#new_journey')[0].reset();
     })
   })
 
@@ -401,5 +417,32 @@ $(document).ready(function(){
     })
 
   })
+
+   $('body').on('click', '.response-input', function(e){
+      e.preventDefault();
+      var formData = $(this).parent().serialize();
+      var current = $(this);
+      var button = $(e.target);
+      var formDataResult = formData + '&'
+      + encodeURI(button.attr('name'))
+      + '='
+      + encodeURI(button.attr('value'));
+
+      console.log(formDataResult)
+      $.ajax({
+        url: $(this).parent().attr('action'),
+        method:"PUT",
+        data: formDataResult
+      })
+      .done(function(response){
+
+        console.log(response)
+        current.hide()
+        $(".nav1").removeClass("menushow");
+        $(".nav2").addClass("menushow2");
+        $('#slideout').html(response);
+
+      })
+   })
 
 })

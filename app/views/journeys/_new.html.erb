@@ -1,25 +1,31 @@
 <div class="begin-form">
-  <span class="close">&times;</span>
-  <h2>Begin</h2>
-  <div class="errors"></div>
-  <%= form_for @journey do |f| %>
-    <%= f.label :name %>
-    <%= f.text_field :name, placeholder: "Road Trip to Lassen National Park", required: true %>
+  <div class="form-header">
+    <h2>Begin</h2>
+    <span class="close">&times;</span>
+  </div>
+  <div class="form-contents">
+    <div class="errors"></div>
+    <%= form_for @journey do |f| %>
+      <%= f.label :name %>
+      <%= f.text_field :name, placeholder: "Road Trip to Lassen National Park", required: true %>
 
-    <%= f.label :hashtag %>
-    <%= f.text_field :hashtag, placeholder: "#lassen2016", required: true %>
+      <%= f.label :hashtag %>
+      <%= f.text_field :hashtag, placeholder: "#lassen2016", required: true %>
 
-    <%= f.label :friends %>
-    <%= fields_for :friends, @invite do |friends_f| %>
-    <%= friends_f.text_field :guest_id, placeholder: "@goatogether, @my_dog" %>
+      <%= f.label :friends %>
+      <%= fields_for :friends, @invite do |friends_f| %>
+      <%= friends_f.text_field :guest_id, placeholder: "@goatogether, @my_dog" %>
+      <% end %>
+
+      <%= f.label :start_date %>
+      <%= f.datetime_field :start_time, required: true %>
+
+      <%= f.label :end_date %>
+      <%= f.datetime_field :end_time, required: true %>
+
+      <div class="input-button">
+      <%= f.submit "Let's Go!" %>
+      </div>
     <% end %>
-
-    <%= f.label :start_date %>
-    <%= f.datetime_field :start_time, required: true %>
-
-    <%= f.label :end_date %>
-    <%= f.datetime_field :end_time, required: true %>
-
-    <%= f.submit "Let's Go!" %>
-  <% end %>
+  </div>
 </div>

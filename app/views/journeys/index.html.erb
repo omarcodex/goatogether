@@ -1,41 +1,65 @@
-<h1><%= current_user.nickname %></h1>
-<% unless @pending_invitations && @pending_invitations.empty? %>
-  <h2 class='invitations'>Pending Journeys</h2><i class="fa fa-envelope fa-3 invitations" aria-hidden="true"></i>
+<div class="user-card">
+  <div class="tweet-user-left">
+    <div class="twitter-avatar"></div>
+    <div class="tweet-name-username">
+      <h2><%= current_user.name %></h2>
+      <div class="twitter-nickname">@<%= current_user.nickname %></div>
+    </div>
+  </div>
+  <div class="tweet-user-right">
+    <span id="twitter-icon"><a href="https://twitter.com/<%= current_user.nickname %>"><i class="fa fa-twitter" aria-hidden="true"></i></a></span>
+  </div>
+</div>
 
-  <% @pending_invitations.each do |invite| %>
+<div class="journeys-index">
+  <% unless @pending_invitations && @pending_invitations.empty? %>
+  <h2 class='invitations'><i class="fa fa-envelope fa-3" aria-hidden="true"></i>Pending Journeys</h2>
 
-    <h3 class='invitations'><a href="/journeys/<%= invite.journey.id %>"><%= invite.journey.name %></a></h3>
-      <p class='invitations'><%= format_time(invite.journey.start_time) %> - <%= format_time(invite.journey.end_time) %></li>
-      <p class='invitations'><a href="/users/<%= invite.journey.user.id %>">Hosted by: @<%= invite.journey.user.nickname %></a>
-      <form class="invite-response-form" action='/invites/<%= invite.id %>' method="post">
-      <input type="hidden" name="_method" value="put"><button class='response-input' type='text' name='response' value='true'>Yes</button></input>
-      <input type="hidden" name="_method" value="put"><button class="response-input" type="text" name="response" value="false">No</button></input>
-      <%= hidden_field_tag :authenticity_token, form_authenticity_token %></form>
+    <% @pending_invitations.each do |invite| %>
+    <div class="journey-details">
+      <h3 class='invitations'><a href="/journeys/<%= invite.journey.id %>"><%= invite.journey.name %></a></h3>
+        <p><%= format_time(invite.journey.start_time) %> - <%= format_time(invite.journey.end_time) %></p>
+        <div class="host">
+          <span><a href="/users/<%= invite.journey.user.id %>">@<%= invite.journey.user.nickname %></a>
+          has invited you to join them on a journey!</span>
+        </div>
+
+        <form class="invite-response-form" action='/invites/<%= invite.id %>' method="post">
+          <span>Attend?</span><input type="hidden" name="_method" value="put"><button class='response-input' type='text' name='response' value='true'>Yes</button></input>
+          <input type="hidden" name="_method" value="put"><button class="response-input" type="text" name="response" value="false">No</button></input>
+        <%= hidden_field_tag :authenticity_token, form_authenticity_token %></form>
+      </div>
+    <% end %>
   <% end %>
-<% end %>
 
-<% unless @upcoming_journeys && @upcoming_journeys.empty? %>
+  <% unless @upcoming_journeys && @upcoming_journeys.empty? %>
   <h2>Upcoming Journeys</h2>
-  <% @upcoming_journeys.each do |journey| %>
-  <h3 ><a class='journeylink' href="/journeys/<%= journey.id %>"><%= journey.name %></a></h3>
-  <p><%= format_time(journey.start_time) %> - <%= format_time(journey.end_time) %></p>
+    <% @upcoming_journeys.each do |journey| %>
+    <div class="journey-details">
+      <h3><a class='journeylink' href="/journeys/<%= journey.id %>"><%= journey.name %></a></h3>
+      <p><%= format_time(journey.start_time) %> - <%= format_time(journey.end_time) %></p>
+    </div>
+    <% end %>
   <% end %>
-<% end %>
-<% if @accepted_invitations %>
-  <% @accepted_invitations.each do |invitation| %>
-  <h3><a href="/journeys/<%= invitation.journey.id %>"><%= invitation.journey.name %></a></h3>
-  <p><%= format_time(invitation.journey.start_time) %> - <%= format_time(invitation.journey.end_time) %></p>
-  <% end %>
-<% end %>
 
-<% if @previous_journeys %>
-  <h2>Previous Journeys</h2>
-  <% @previous_journeys.each do |journey| %>
-  <h3 ><a class='journeylink' href="/journeys/<%= journey.id %>"><%= journey.name %></a></h3>
-  <p><%= format_time(journey.start_time) %> - <%= format_time(journey.end_time) %></p>
+  <% unless @current_journeys && @current_journeys.empty? %>
+    <h2>Current Journeys</h2>
+    <% @current_journeys.each do |journey| %>
+    <div class="journey-details">
+      <h3><a class='journeylink' href="/journeys/<%= journey.id %>"><%= journey.name %></a></h3>
+      <p><%= format_time(journey.start_time) %> - <%= format_time(journey.end_time) %></p>
+    </div>
+    <% end %>
   <% end %>
-<% end %>
 
-<% if @upcoming_journeys.empty? && @previous_journeys.empty? %>
-<p>This user has not recorded any journeys</p>
-<% end %>
+  <% unless @previous_journeys && @previous_journeys.empty? %>
+    <h2>Previous Journeys</h2>
+    <% @previous_journeys.each do |journey| %>
+    <div class="journey-details">
+      <h3><a class='journeylink' href="/journeys/<%= journey.id %>"><%= journey.name %></a></h3>
+      <p><%= format_time(journey.start_time) %> - <%= format_time(journey.end_time) %></p>
+    </div>
+    <% end %>
+  <% end %>
+</div>
+

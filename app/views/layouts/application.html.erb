@@ -20,8 +20,9 @@
   <div class ="search">
     <form class="search-form" action="/journeys/search" method="get">
       <input class="search-input" type="text" name="search" placeholder="search for location, user, or hashtag"><i class="fa fa-search" aria-hidden="true"></i><br>
+      <div class="range">
       <input type="range" name="rangeInput" min="25" max="250" onchange="updateTextInput(this.value);"><br>
-      <input id="textInput" placeholder="112 miles" readonly>
+      <input id="textInput" placeholder="112 miles" readonly></div>
       <input class="search-submit" type='submit'></input>
     </form>
   </div>
@@ -32,17 +33,24 @@
       </div>
       </ul>
       <ul class="menu-nav">
-        <% unless @pending_invitations && @pending_invitations.empty? %>
-          <li class='invitations'><i class="fa fa-envelope fa-3 invitations" aria-hidden="true"></i><a id='invitations-nav' class='invitations' href="/journeys/">You have invitations!</a></li>
-          <% end %>
          <li><a href="/">Explore</a></li>
          <li><a href="/journeys/new">Begin</a></li>
          <li><a class="adventure" href="/journeys/random">I'm feeling Adventurous</a></li>
        </ul>
        <ul class="menu-user">
-          <li id="user-profile"><a href="/users/<%= if current_user then current_user.id end %>"><i class="fa fa-user-circle" aria-hidden="true"></i> User</a></li>
-          <li><a href="#"><i class="fa fa-cog" aria-hidden="true"></i> Settings</a></li>
-          <li><a href="/sessions/logout"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a></li>
+          <li id="user-profile">
+            <a href="/journeys">
+            <i class="fa fa-user-circle" aria-hidden="true"></i>
+            <%= if current_user then current_user.name end %>
+            <% unless @pending_invitations && @pending_invitations.empty? %>
+            <i class="fa fa-envelope fa-3" aria-hidden="true"></i>
+            <% end %>
+            </a>
+
+          </li>
+          <li><a href="/sessions/logout">
+            <i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a>
+          </li>
       </ul>
     </nav>
 
